@@ -9,7 +9,8 @@ namespace EFCore.Repositorio
 {
     public class HeroiContexto : DbContext
     {
-        public HeroiContexto(DbContextOptions<HeroiContexto> options) : base(options) { } //passa options para startup.cs
+
+        public HeroiContexto(DbContextOptions<HeroiContexto> options) : base(options) { } //construtor principal, passa options para startup.cs
 
         public DbSet<Heroi> Herois { get; set; }
         public DbSet<Batalha> Batalhas { get; set; }
