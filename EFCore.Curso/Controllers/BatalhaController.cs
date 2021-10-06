@@ -7,25 +7,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
 namespace EFCore.Curso.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HeroiController : ControllerBase
+    public class BatalhaController : ControllerBase
     {
         private readonly HeroiContexto _contexto;
-        public HeroiController(HeroiContexto contexto)
+        public BatalhaController(HeroiContexto contexto)
         {
             _contexto = contexto;
         }
-
-        // GET: api/<HeroiController>
+        // GET: api/<BatalhaController>
         [HttpGet]
         public ActionResult Get()
         {
             try
             {
-                return Ok(new Heroi());
+                return Ok(new Batalha());
             }
             catch (Exception ex)
             {
@@ -33,20 +34,20 @@ namespace EFCore.Curso.Controllers
             }
         }
 
-        // GET api/<HeroiController>/5
-        [HttpGet("{id}", Name = "Get")]
+        // GET api/<BatalhaController>/5
+        [HttpGet("{id}", Name = "GetBatalha")]
         public ActionResult Get(int id)
         {
             return Ok("value");
         }
 
-        // POST api/<HeroiController>
+        // POST api/<BatalhaController>
         [HttpPost]
-        public ActionResult Post(Heroi model)
+        public ActionResult Post(Batalha model)
         {
             try
-            {                
-                _contexto.Herois.Add(model);
+            {
+                _contexto.Batalhas.Add(model);
                 _contexto.SaveChanges();
 
                 return Ok("Adicionado!");
@@ -57,15 +58,15 @@ namespace EFCore.Curso.Controllers
             }
         }
 
-        // PUT api/<HeroiController>/5
+        // PUT api/<BatalhaController>/5
         [HttpPut("{id}")]
-        public ActionResult Put(int id, Heroi model)
+        public ActionResult Put(int id, Batalha model)
         {
             try
             {
-                if (_contexto.Herois.AsNoTracking().FirstOrDefault(h => h.Id == id) != null)
+                if (_contexto.Batalhas.AsNoTracking().FirstOrDefault(h => h.Id == id) != null)
                 {
-                    _contexto.Update(model); //_contexto.Herois.Update(heroi); é mais especifico
+                    _contexto.Update(model); 
                     _contexto.SaveChanges();
 
                     return Ok("Editado!");
@@ -79,7 +80,7 @@ namespace EFCore.Curso.Controllers
             }
         }
 
-        // DELETE api/<HeroiController>/5
+        // DELETE api/<BatalhaController>/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
