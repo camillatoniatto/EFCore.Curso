@@ -15,18 +15,21 @@ namespace EFCore.Curso.Controllers
     [ApiController]
     public class BatalhaController : ControllerBase
     {
-        private readonly HeroiContexto _contexto;
-        public BatalhaController(HeroiContexto contexto)
+        private readonly IEFCoreRepositorio _repositorio;
+
+        public BatalhaController(IEFCoreRepositorio repositorio)
         {
-            _contexto = contexto;
+            _repositorio = repositorio;
         }
         // GET: api/<BatalhaController>
         [HttpGet]
-        public ActionResult Get()
+        public async Task<IActionResult> Get()
         {
             try
             {
-                return Ok(new Batalha());
+                var herois = await _repositorio.GetAllBatalhas(true);
+
+                return Ok(herois);
             }
             catch (Exception ex)
             {
@@ -35,55 +38,86 @@ namespace EFCore.Curso.Controllers
         }
 
         // GET api/<BatalhaController>/5
-        [HttpGet("{id}", Name = "GetBatalha")]
-        public ActionResult Get(int id)
+        [HttpGet("{id}", Name = "GetBatalha")] //está dando problema de looping!!
+        public async Task<IActionResult> Get(int id)
         {
-            return Ok("value");
+            try
+            {
+                var herois = await _repositorio.GetBatalhaById(id, true);
+
+                return Ok(herois);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: {ex}");
+            }
         }
 
         // POST api/<BatalhaController>
-        [HttpPost]
-        public ActionResult Post(Batalha model)
+        [HttpPost] //para adicionar não coloca id
+        public async Task<IActionResult> Post(Batalha model) //está trabalhando com async
         {
             try
             {
-                _contexto.Batalhas.Add(model);
-                _contexto.SaveChanges();
-
-                return Ok("Adicionado!");
+                _repositorio.Add(model); 
+                if (await _repositorio.SaveChangeAsync()) //sempre utilizar um await, se utiliza o async
+                {
+                    return Ok("Adicionado!");
+                }
+                
             }
             catch (Exception ex)
             {
                 return BadRequest($"Erro: {ex}");
             }
+            
+            return BadRequest("Não foi adicionado");
         }
 
         // PUT api/<BatalhaController>/5
-        [HttpPut("{id}")]
-        public ActionResult Put(int id, Batalha model)
+        [HttpPut("{id}")] //para atualizar precisa do id
+        public async Task<IActionResult> Put(int id, Batalha model)
         {
             try
             {
-                if (_contexto.Batalhas.AsNoTracking().FirstOrDefault(h => h.Id == id) != null)
+                var heroi = await _repositorio.GetBatalhaById(id);
+                if (heroi != null)
                 {
-                    _contexto.Update(model); 
-                    _contexto.SaveChanges();
-
-                    return Ok("Editado!");
+                    _repositorio.Update(model);
+                    if (await _repositorio.SaveChangeAsync()) 
+                    {
+                        return Ok("Editado!");
+                    }
                 }
-
-                return Ok("Não Encontrado!");
             }
             catch (Exception ex)
             {
                 return BadRequest($"Erro: {ex}");
             }
+            return BadRequest("Não foi editado");
         }
 
         // DELETE api/<BatalhaController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            try
+            {
+                var heroi = await _repositorio.GetBatalhaById(id);
+                if (heroi != null)
+                {
+                    _repositorio.Delete(heroi);
+                    if (await _repositorio.SaveChangeAsync()) //sempre utilizar um await, se utiliza o async
+                    {
+                        return Ok("Editado!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: {ex}");
+            }
+            return BadRequest("Não foi editado");
         }
     }
 }

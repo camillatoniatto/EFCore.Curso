@@ -31,6 +31,8 @@ namespace EFCore.Curso
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            services.AddScoped<IEFCoreRepositorio, EFCoreRepositorio>(); //faz a instancia; engessa a interface e sua implementação
+
             services.AddControllers();
         }
 

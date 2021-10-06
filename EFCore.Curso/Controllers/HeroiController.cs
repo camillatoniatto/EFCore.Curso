@@ -13,19 +13,22 @@ namespace EFCore.Curso.Controllers
     [ApiController]
     public class HeroiController : ControllerBase
     {
-        private readonly HeroiContexto _contexto;
-        public HeroiController(HeroiContexto contexto)
+        private readonly IEFCoreRepositorio _repositorio;
+
+        public HeroiController(IEFCoreRepositorio repositorio)
         {
-            _contexto = contexto;
+            _repositorio = repositorio;
         }
 
         // GET: api/<HeroiController>
         [HttpGet]
-        public ActionResult Get()
+        public async Task<IActionResult> Get()
         {
             try
             {
-                return Ok(new Heroi());
+                var herois = await _repositorio.GetAllHerois(true);
+
+                return Ok(herois);
             }
             catch (Exception ex)
             {
@@ -35,54 +38,85 @@ namespace EFCore.Curso.Controllers
 
         // GET api/<HeroiController>/5
         [HttpGet("{id}", Name = "Get")]
-        public ActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return Ok("value");
+            try
+            {
+                var herois = await _repositorio.GetHeroiById(id, true);
+
+                return Ok(herois);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: {ex}");
+            }
         }
 
         // POST api/<HeroiController>
         [HttpPost]
-        public ActionResult Post(Heroi model)
+        public async Task<IActionResult> Post(Heroi model)
         {
             try
-            {                
-                _contexto.Herois.Add(model);
-                _contexto.SaveChanges();
+            {
+                _repositorio.Add(model);
+                if (await _repositorio.SaveChangeAsync()) //sempre utilizar um await, se utiliza o async
+                {
+                    return Ok("Adicionado!");
+                }
 
-                return Ok("Adicionado!");
             }
             catch (Exception ex)
             {
                 return BadRequest($"Erro: {ex}");
             }
+
+            return BadRequest("Não foi adicionado");
         }
 
         // PUT api/<HeroiController>/5
         [HttpPut("{id}")]
-        public ActionResult Put(int id, Heroi model)
+        public async Task<IActionResult> Put(int id, Heroi model)
         {
             try
             {
-                if (_contexto.Herois.AsNoTracking().FirstOrDefault(h => h.Id == id) != null)
+                var heroi = await _repositorio.GetHeroiById(id);
+                if (heroi != null)
                 {
-                    _contexto.Update(model); //_contexto.Herois.Update(heroi); é mais especifico
-                    _contexto.SaveChanges();
-
-                    return Ok("Editado!");
+                    _repositorio.Update(model);
+                    if (await _repositorio.SaveChangeAsync())
+                    {
+                        return Ok("Editado!");
+                    }
                 }
-
-                return Ok("Não Encontrado!");
             }
             catch (Exception ex)
             {
                 return BadRequest($"Erro: {ex}");
             }
+            return BadRequest("Não foi editado");
         }
 
         // DELETE api/<HeroiController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            try
+            {
+                var heroi = await _repositorio.GetHeroiById(id);
+                if (heroi != null)
+                {
+                    _repositorio.Delete(heroi);
+                    if (await _repositorio.SaveChangeAsync()) //sempre utilizar um await, se utiliza o async
+                    {
+                        return Ok("Editado!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: {ex}");
+            }
+            return BadRequest("Não foi editado");
         }
     }
 }
